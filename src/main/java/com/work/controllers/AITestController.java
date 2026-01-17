@@ -1,25 +1,32 @@
 package com.work.controllers;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.ollama.api.OllamaOptions;
+import com.google.gson.Gson;
+import com.work.service.MyServices;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 public class AITestController {
 
-    private final ChatClient chatClient;
-
-    public AITestController(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
-    }
+    @Autowired
+    private MyServices myServices;
 
     @GetMapping("/getTextMessage")
     public ResponseEntity<String> getTextMessage() {
+        List<String> messages = new ArrayList<>();
+        messages.add("India");
+        messages.add("USA");
+        messages.add("UK");
+        messages.add("Canada");
+        Gson gson = new Gson();
+        System.out.println("Messages:::" + gson.toJson(messages));
         return new ResponseEntity("Hi Kishor", HttpStatus.OK);
     }
 
@@ -27,30 +34,47 @@ public class AITestController {
     @GetMapping("/ai/chat")
     public String generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
         System.out.println("Kishor::: message: " + message);
-        return chatClient.prompt()
-                .user(message)
-                .call()
-                .content();
+        return myServices.getAIMessage(message);
     }
 
     @GetMapping("/getPopulation/{countryName}")
     public String getPopulation(@PathVariable("countryName") String countryName) {
-        if(!countryName.isBlank() &&  !countryName.isEmpty()) {
-            String promptText = "What is the current population of "+countryName+"? Respond with only the number, with no additional text, words, or formatting.";
+        return myServices.getPopulation(countryName);
+    }
 
-            OllamaOptions options = OllamaOptions.builder()
-                    .temperature(0.0d)
-                    .topP(1.0d)
-                    .seed(42)
-                    .build();
-
-            String population = chatClient.prompt()
-                    .user(promptText)
-                    .options(options)
-                    .call()
-                    .content();
-            return population;
+    @GetMapping("/getAsyncMessage")
+    public ResponseEntity<List<String>> getAsyncMessage() {
+        try {
+            System.out.println("asynchronously rest method getAsyncMessage=" + Thread.currentThread().getName());
+            List<CompletableFuture<String>> futuresList = List.of(
+                    myServices.getWelcomeMessage(),
+                    myServices.getWelcomeMessage(),
+                    myServices.getWelcomeMessage(),
+                    myServices.getWelcomeMessage(),
+                    myServices.getWelcomeMessage()
+            );
+            CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0])).join();
+            List<String> results = futuresList.stream().map(CompletableFuture::join).toList();
+            return new ResponseEntity(results, HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return "Country Name is blank";
+        return new ResponseEntity("Error Occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @PostMapping("/getPopulationForCountries")
+    public ResponseEntity<List<String>> getPopulationForCountries(
+            @RequestParam("countryNames") List<String> countryNames) {
+        try {
+            System.out.println("asynchronously rest method getAsyncMessage=" + Thread.currentThread().getName());
+            List<CompletableFuture<String>> futuresList = countryNames.stream().map(x ->{
+                return myServices.getAIPopulation(x);
+            }).collect(Collectors.toUnmodifiableList());
+            CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0])).join();
+            List<String> results = futuresList.stream().map(CompletableFuture::join).toList();
+            return new ResponseEntity(results, HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity("Error Occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
