@@ -9,11 +9,11 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class MyServices {
+public class MyOllamaServices {
 
     private final ChatClient chatClient;
 
-    public MyServices(ChatClient.Builder builder) {
+    public MyOllamaServices(ChatClient.Builder builder) {
         this.chatClient = builder.build();
     }
 
@@ -34,7 +34,8 @@ public class MyServices {
                     .seed(42)
                     .build();
 
-            String population = chatClient.prompt()
+            String population = chatClient
+                    .prompt()
                     .user(promptText)
                     .options(options)
                     .call()

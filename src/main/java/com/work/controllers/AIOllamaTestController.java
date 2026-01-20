@@ -1,7 +1,7 @@
 package com.work.controllers;
 
 import com.google.gson.Gson;
-import com.work.service.MyServices;
+import com.work.service.MyOllamaServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @RestController
-public class AITestController {
+public class AIOllamaTestController {
 
     @Autowired
-    private MyServices myServices;
+    private MyOllamaServices myOllamaServices;
 
     @GetMapping("/getTextMessage")
     public ResponseEntity<String> getTextMessage() {
@@ -34,12 +34,12 @@ public class AITestController {
     @GetMapping("/ai/chat")
     public String generate(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
         System.out.println("Kishor::: message: " + message);
-        return myServices.getAIMessage(message);
+        return myOllamaServices.getAIMessage(message);
     }
 
     @GetMapping("/getPopulation/{countryName}")
     public String getPopulation(@PathVariable("countryName") String countryName) {
-        return myServices.getPopulation(countryName);
+        return myOllamaServices.getPopulation(countryName);
     }
 
     @GetMapping("/getAsyncMessage")
@@ -47,11 +47,11 @@ public class AITestController {
         try {
             System.out.println("asynchronously rest method getAsyncMessage=" + Thread.currentThread().getName());
             List<CompletableFuture<String>> futuresList = List.of(
-                    myServices.getWelcomeMessage(),
-                    myServices.getWelcomeMessage(),
-                    myServices.getWelcomeMessage(),
-                    myServices.getWelcomeMessage(),
-                    myServices.getWelcomeMessage()
+                    myOllamaServices.getWelcomeMessage(),
+                    myOllamaServices.getWelcomeMessage(),
+                    myOllamaServices.getWelcomeMessage(),
+                    myOllamaServices.getWelcomeMessage(),
+                    myOllamaServices.getWelcomeMessage()
             );
             CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0])).join();
             List<String> results = futuresList.stream().map(CompletableFuture::join).toList();
@@ -67,7 +67,7 @@ public class AITestController {
         try {
             System.out.println("asynchronously rest method getAsyncMessage=" + Thread.currentThread().getName());
             List<CompletableFuture<String>> futuresList = countryNames.stream().map(x ->{
-                return myServices.getAIPopulation(x);
+                return myOllamaServices.getAIPopulation(x);
             }).collect(Collectors.toUnmodifiableList());
             CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0])).join();
             List<String> results = futuresList.stream().map(CompletableFuture::join).toList();
