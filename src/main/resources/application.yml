@@ -1,3 +1,4 @@
+debug: true
 server:
   port: 2020
   servlet:
@@ -8,11 +9,23 @@ logging:
     root: DEBUG
 
 spring:
+  http:
+    client:
+      factory: simple
+  main:
+    allow-bean-definition-overriding: true
   ai:
+    vectorstore:
+      chroma:
+        client:
+          host: http://localhost
+          port: 3030
+        collection-name: my_collection
+        initialize-schema: true
     ollama:
       base-url: http://localhost:11434
       chat:
         options:
           model: phi3:latest
 
-debug: true
+# spring.ai.ollama.init.pull-model-strategy=when_missing # This will pull the model only if it's not already present
