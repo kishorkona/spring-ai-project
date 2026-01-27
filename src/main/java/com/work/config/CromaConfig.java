@@ -8,6 +8,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 @Configuration
 public class CromaConfig {
+    /*
     @Bean
     public ChromaConnectionDetails chromaConnectionDetails() {
         return new ChromaConnectionDetails() {
@@ -28,7 +29,7 @@ public class CromaConfig {
             }
         };
     }
-
+    */
     @Bean
     @Primary
     public SimpleClientHttpRequestFactory simpleClientHttpRequestFactory() {
