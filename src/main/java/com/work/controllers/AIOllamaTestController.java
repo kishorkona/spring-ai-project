@@ -1,6 +1,7 @@
 package com.work.controllers;
 
 import com.google.gson.Gson;
+import com.work.data.PostDocuments;
 import com.work.service.MyOllamaServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -20,13 +23,18 @@ public class AIOllamaTestController {
 
     @GetMapping("/getTextMessage")
     public ResponseEntity<String> getTextMessage() {
-        List<String> messages = new ArrayList<>();
-        messages.add("India");
-        messages.add("USA");
-        messages.add("UK");
-        messages.add("Canada");
+        List<PostDocuments> messages = new ArrayList<>();
+        PostDocuments document = new PostDocuments();
+        document.setUniqueId("ond01");
+        document.setContent("This is first document content");
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("source", "manual.pdf");
+        metadata.put("meta2", "meta2");
+        document.setMetadata(metadata);
+        messages.add(document);
         Gson gson = new Gson();
         System.out.println("Messages:::" + gson.toJson(messages));
+
         return new ResponseEntity("Hi Kishor", HttpStatus.OK);
     }
 

@@ -1,6 +1,7 @@
 package com.work.service;
 
 import com.google.gson.Gson;
+import com.work.data.PostDocuments;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MyChromaServices {
@@ -47,15 +49,28 @@ public class MyChromaServices {
     }
 
 
-    public boolean addDocuments() throws ResourceAccessException {
+    public boolean addDocuments(List<PostDocuments> documents) throws ResourceAccessException {
         try {
+            List<Document> vectorDocs = documents.stream()
+                    .map(doc -> {
+                        Map<String, Object> metaMap = doc.getMetadata().entrySet()
+                                .stream()
+                                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
 
+                        if(doc.getUniqueId() != null && !doc.getUniqueId().isEmpty()) {
+                            return new Document(doc.getUniqueId(), doc.getContent(), metaMap);
+                        }
+                        return new Document(doc.getContent(), metaMap);
+                    })
+                    .toList();
+            vectorStore.add(vectorDocs);
+            /*
             List<Document> documents = List.of(
                     new Document("unique-id-123", "Spring AI rocks!! Spring AI rocks!! Spring AI rocks!! Spring AI rocks!! Spring AI rocks!!", Map.of("meta1", "meta1")),
                     new Document("unique-id-124", "The World is Big and Salvation Lurks Around the Corner", Map.of("meta2", "meta2")),
                     new Document("unique-id-125", "You walk forward facing the past and you turn back toward the future.", Map.of("meta2", "meta2")));
             vectorStore.add(documents);
-
+            */
             return  true;
         }catch (Exception e) {
             e.printStackTrace();
